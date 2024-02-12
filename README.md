@@ -27,6 +27,7 @@ and when user enables Keda as a replacement (this is experimental). The ksvc own
 The hpa object created is solely managed by Keda and Knative does not interfere.
 
 In order to test the integration checkout this [branch](https://github.com/skonto/serving/tree/support_keda) and install Serving.
+PR preview change [here](https://github.com/knative/serving/compare/main...skonto:serving:support_keda?expand=1).
 For example on Minikube:
 
 ## Install Serving with Keda support for HPA
@@ -204,4 +205,6 @@ Note: Starting a ksvc with zero as min-scale leads to a non scalable scaledobjec
 - https://keda.sh/docs/2.13/concepts/scaling-deployments
 - https://stackoverflow.com/questions/69852707/horizontal-pod-autoscaler-hpa-custom-metrics-with-prometheus-adapter-how-are
 - https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale
-- 
+- https://github.com/kubernetes-sigs/prometheus-adapter/blob/master/docs/walkthrough.md
+- https://access.redhat.com/documentation/it-it/openshift_container_platform/4.1/html/monitoring/exposing-custom-application-metrics-for-autoscaling
+- https://www.ibm.com/docs/en/cloud-private/3.2.0?topic=tp-horizontal-pod-auto-scaling-by-using-custom-metrics
