@@ -18,6 +18,7 @@ offers wrt external metrics. There are some benefits with this approach:
 - Knative offers smooth integration with Istio and other ingresses.
 - Prometheus adapter is in maintance mode and Keda serves the same role using external metrics instead of custom
 - QP offers backpressure capabilities
+- OCP offers hpa via KEDA
 
 Note: It is a no-go here to offer the full Keda functionality.
 
@@ -193,6 +194,8 @@ metrics-test-00001-deployment-689dd95d99-ss8tq           1/2     Terminating   0
 metrics-test-00001-deployment-689dd95d99-tf6pw           1/2     Terminating   0          11m
 
 ```
+
+Note: Starting a ksvc with zero as min-scale leads to a non scalable scaledobject.
 
 ## Resources
 
