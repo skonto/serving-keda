@@ -199,7 +199,9 @@ Note: Starting a ksvc with zero as min-scale leads to a non scalable scaledobjec
 
 ## Resources
 
-https://knative.dev/docs/serving/autoscaling/autoscaler-types/#horizontal-pod-autoscaler-hpa
-https://sysdig.com/blog/kubernetes-hpa-prometheus
-https://keda.sh/docs/2.13/concepts/scaling-deployments
-https://stackoverflow.com/questions/69852707/horizontal-pod-autoscaler-hpa-custom-metrics-with-prometheus-adapter-how-are
+- https://knative.dev/docs/serving/autoscaling/autoscaler-types/#horizontal-pod-autoscaler-hpa
+- https://sysdig.com/blog/kubernetes-hpa-prometheus
+- https://keda.sh/docs/2.13/concepts/scaling-deployments
+- https://stackoverflow.com/questions/69852707/horizontal-pod-autoscaler-hpa-custom-metrics-with-prometheus-adapter-how-are
+- https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale
+- 
