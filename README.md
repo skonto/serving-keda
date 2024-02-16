@@ -81,6 +81,7 @@ export KO_DOCKER_REPO=localhost:5000/knative
 ko apply --selector knative.dev/crd-install=true -Rf config/core/
 kubectl wait --for=condition=Established --all crd
 ko apply -Rf config/core/
+ko apply -f config/hpa-autoscaling
 kubectl apply -f ./third_party/kourier-latest/kourier.yaml
 
 kubectl patch configmap/config-network \
