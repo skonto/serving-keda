@@ -1,4 +1,12 @@
-# Integrate Keda with Knative Serving
+# Keda HPA Autoscaler
+
+This is a drop in replacement for the Knative Serving autoscaler-hpa component.
+
+## How Knative integrates with HPA
+K8s HPA API allows defining custom metrics for autoscaling targets. In order to use that API you need to register a metric with it and offer a service eg. Prometheus Adapter that aggregates the metric and makes it available to HPA. Typically the service will aggregate the metrics by fetching them from another service like Prometheus. Typically the architecture is:
+![hpa.png](hpa.png)
+
+Note here that there are actually different types of APIs offered with HPA: metrics.k8s.io, custom.metrics.k8s.io, external.metrics.k8s.io. These apis serve a different purpose, for more check here.
 
 Knative integrates with HPA via defining the appropriate autoscaling class at the revision level:
 
@@ -6,31 +14,37 @@ Knative integrates with HPA via defining the appropriate autoscaling class at th
 autoscaling.knative.dev/class: "hpa.autoscaling.knative.dev"
 ```
 
-Then a special controller called autoscaler-hpa creates a K8s hpa object and sets the service in serve mod.
+Then a special controller called autoscaler-hpa creates a K8s hpa object and sets the service in serve mode.
 Since Knative relies on hpa for autoscaling there is no activator involved.
 Knative supports HPA for different categories of metrics: cpu, memory and custom metrics.
-In order to support hpa with Knative with custom metrics user needs to install Prometheus adapter among others.
-See for the details the guide [here](https://gist.github.com/skonto/e9aa295a540c016e868d59702f77e750) on Minikube.
+In order to support hpa with Knative with custom metrics user needs to install Prometheus adapter among others
+or use whatever service a cloud provider may offer. [Here](https://gist.github.com/skonto/e9aa295a540c016e868d59702f77e750) is an example on Minikube.
 
-The goal of integrating Knative Serving with Keda here is to delegate the hpa management to Keda and also use what Keda
-offers wrt external metrics. There are some benefits with this approach:
-- Use Queue Proxy (QP) for handling graceful termination in serve mode
-- Knative offers smooth integration with Istio and other ingresses.
-- Prometheus adapter is in maintance mode and Keda serves the same role using external metrics instead of custom
-- QP offers backpressure capabilities
-- OCP offers hpa via KEDA
+The design of the integration is based on the idea of creating a scaledobject for a ksvc that defines the hpa autoscaling class.
+The ksvc owns the Scaledobejct which is removed when ksvc is removed.  The hpa object created is solely managed by Keda and Knative does not interfere.
 
 Note: It is a no-go here to offer the full Keda functionality.
 
-The design of the integration is based on the idea of creating a scaledobject for a ksvc that defines the hpa autoscaling class
-and when user enables Keda as a replacement (this is experimental). The ksvc owns the scaledobejct which is removed when ksvc is removed.
-The hpa object created is solely managed by Keda and Knative does not interfere.
+## Why I need it
 
-In order to test the integration the user needs to install Knative Serving, Keda and the autoscaler-keda-hpa component from this repo.
+The goal of integrating Knative Serving with Keda here is to delegate the hpa management to Keda and also use what Keda
+offers wrt external metrics. There are some benefits with this approach that combines Keda with Serving:
+- Avoid enganging with hpa details. Curently KEDA is the way to go for autoscaling K8s workloads that are not based on http metrics.
+  Within the same env users can use high level resources to manage autoscaling. Users will still keep ksvc as the service definition resource.
+- Prometheus adapter is in maintainance mode and Keda serves the same role using external metrics instead of custom.
+- A productized version of Prometheus Adapter service may not be available for your setup. Although cloud providers usually offer a solution implementing their own component for custom metrics aggregation, this leaves users with on-premise deployments without having a properly maintained solution.
+- Configuring a custom adapter service for custom metrics is not that easy.
 
-For example on Minikube:
+## Use Cases
 
-## Install Serving with Keda support for HPA
+- Model autoscaling with custom metrics eg. gpu metrics. Model inference based on Knative (KServe).
+  See for example the upstream Knative [issue](https://github.com/knative/serving/issues/14877).
+
+## Run Locally
+
+Example on Minikube:
+
+### Install Serving with Keda support for HPA
 ```
 MEMORY=${MEMORY:-40000}
 CPUS=${CPUS:-6}
@@ -114,7 +128,7 @@ prometheus-prometheus-kube-prometheus-prometheus-0       2/2     Running   0    
 prometheus-prometheus-node-exporter-q86xv                1/1     Running   0          12h
 ```
 
-## Run a ksvc with Keda HPA support
+### Run a ksvc with Keda HPA support
 
 Apply the [service.yaml](./service.yaml) and wait for the service to be ready.
 
@@ -166,13 +180,9 @@ metrics-test-00001-deployment-689dd95d99-tf6pw           1/2     Terminating   0
 
 ```
 
-## Resources
+## Roadmap
 
-- https://knative.dev/docs/serving/autoscaling/autoscaler-types/#horizontal-pod-autoscaler-hpa
-- https://sysdig.com/blog/kubernetes-hpa-prometheus
-- https://keda.sh/docs/2.13/concepts/scaling-deployments
-- https://stackoverflow.com/questions/69852707/horizontal-pod-autoscaler-hpa-custom-metrics-with-prometheus-adapter-how-are
-- https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale
-- https://github.com/kubernetes-sigs/prometheus-adapter/blob/master/docs/walkthrough.md
-- https://access.redhat.com/documentation/it-it/openshift_container_platform/4.1/html/monitoring/exposing-custom-application-metrics-for-autoscaling
-- https://www.ibm.com/docs/en/cloud-private/3.2.0?topic=tp-horizontal-pod-auto-scaling-by-using-custom-metrics
+- Add a separate autoscaling class for Keda based hpa autoscaling
+- Improve reonciliation loop
+- Add tests
+
