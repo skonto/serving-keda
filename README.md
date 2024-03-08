@@ -6,7 +6,7 @@ This is a drop in replacement for the Knative Serving autoscaler-hpa component.
 K8s HPA API allows defining custom metrics for autoscaling targets. In order to use that API you need to register a metric with it and offer a service eg. Prometheus Adapter that aggregates the metric and makes it available to HPA. Typically the service will aggregate the metrics by fetching them from another service like Prometheus. Typically the architecture is:
 ![hpa.png](hpa.png)
 
-Note here that there are actually different types of APIs offered with HPA: metrics.k8s.io, custom.metrics.k8s.io, external.metrics.k8s.io. These apis serve a different purpose, for more check here.
+Note here that there are actually different types of APIs offered with HPA: metrics.k8s.io, custom.metrics.k8s.io, external.metrics.k8s.io. These apis serve a different purpose, for more check [here](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-metrics-apis).
 
 Knative integrates with HPA via defining the appropriate autoscaling class at the revision level:
 
@@ -20,12 +20,7 @@ Knative supports HPA for different categories of metrics: cpu, memory and custom
 In order to support hpa with Knative with custom metrics user needs to install Prometheus adapter among others
 or use whatever service a cloud provider may offer. [Here](https://gist.github.com/skonto/e9aa295a540c016e868d59702f77e750) is an example on Minikube.
 
-The design of the integration is based on the idea of creating a scaledobject for a ksvc that defines the hpa autoscaling class.
-The ksvc owns the Scaledobejct which is removed when ksvc is removed.  The hpa object created is solely managed by Keda and Knative does not interfere.
-
-Note: It is a no-go here to offer the full Keda functionality.
-
-## Why I need it
+## Why I need a new autoscaler
 
 The goal of integrating Knative Serving with Keda here is to delegate the hpa management to Keda and also use what Keda
 offers wrt external metrics. There are some benefits with this approach that combines Keda with Serving:
@@ -34,6 +29,13 @@ offers wrt external metrics. There are some benefits with this approach that com
 - Prometheus adapter is in maintainance mode and Keda serves the same role using external metrics instead of custom.
 - A productized version of Prometheus Adapter service may not be available for your setup. Although cloud providers usually offer a solution implementing their own component for custom metrics aggregation, this leaves users with on-premise deployments without having a properly maintained solution.
 - Configuring a custom adapter service for custom metrics is not that easy.
+
+## Design
+
+The design of the integration is based on the idea of creating a scaledobject for a ksvc that defines the hpa autoscaling class.
+The ksvc owns the Scaledobejct which is removed when ksvc is removed.  The hpa object created is solely managed by Keda and Knative does not interfere.
+
+Note: It is a no-go here to offer the full Keda functionality.
 
 ## Use Cases
 
@@ -183,6 +185,6 @@ metrics-test-00001-deployment-689dd95d99-tf6pw           1/2     Terminating   0
 ## Roadmap
 
 - Add a separate autoscaling class for Keda based hpa autoscaling
-- Improve reonciliation loop
+- Improve reonciliation loop as now we return an error in order to wait for hpa availability.
 - Add tests
 
